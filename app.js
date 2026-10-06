@@ -1,68 +1,112 @@
-// Funzione che fa da ponte con la funzione Serverless su Vercel
-async function inviaRichiestaAI(messages) {
-  const response = await fetch("/api/get-data", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({ messages })
-  });
+// Funzione per inviare la richiesta di analisi della versione
+async function analizzaVersione() {
+  const foto = document.getElementById('fotoVersione').files[0];
+  const libro = document.getElementById('titoloLibro').value;
+  const isbn = document.getElementById('isbn').value;
+  const titolo = document.getElementById('titolo').value;
+  const incipit = document.getElementById('incipit').value;
 
-  const data = await response.json();
+  const risultatiSection = document.getElementById('risultati');
+  const outputAnalisi = document.getElementById('output-analisi');
 
-  if (!response.ok) {
-    throw new Error(data.error || "Errore durante la richiesta");
+  // Verifica che almeno un campo sia stato compilato
+  if (!incipit && !titolo && !foto) {
+    alert("Inserisci il titolo, le prime parole della versione o carica un'immagine!");
+    return;
   }
 
-  return data.text;
-}
+  // Mostra la sezione dei risultati con messaggio di attesa
+  risultatiSection.classList.remove('hidden');
+  outputAnalisi.innerHTML = "<p><i>Analisi in corso tramite l'IA... attendere prego.</i></p>";
 
-// Funzione per l'analisi del testo/immagine
-async function eseguiAnalisi() {
+  // Prepara il prompt per l'LLM
+  const prompt = `Effettua un'analisi completa di questa versione di latino:
+- Titolo della versione: ${titolo || 'Non specificato'}
+- Libro di testo: ${libro || 'Non specificato'} (ISBN: ${isbn || 'N/D'})
+- Testo / Incipit: ${incipit || 'Vedi titolo'}
+
+Fornisci:
+1. Traduzione chiara e corretta in italiano.
+2. Analisi grammaticale e paradigmi dei verbi principali.
+3. Analisi logica e del periodo.`;
+
   try {
-    let messages = [];
+    const response = await fetch('/api/get-data', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        messages: [
+          { role: "system", content: "Sei un docente ed esperto analizzatore di testi in latino." },
+          { role: "user", content: prompt }
+        ]
+      })
+    });
 
-    if (haFoto) {
-      const base64Compresso = await comprimiImmagine(fileInput.files[0]);
-      messages = [
-        {
-          role: "user",
-          content: [
-            { type: "text", text: promptAnalisi },
-            { type: "image_url", image_url: { url: base64Compresso } }
-          ]
-        }
-      ];
-    } else {
-      messages = [{ role: "user", content: promptAnalisi }];
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || "Errore nella risposta del server");
     }
 
-    const risp = await inviaRichiestaAI(messages);
-    outputAnalisi.innerHTML = `<div style="white-space: pre-wrap; font-family: inherit; line-height: 1.5;">${risp}</div>`;
+    // Mostra la risposta formattata a schermo
+    outputAnalisi.innerHTML = `<div style="white-space: pre-wrap; line-height: 1.5;">${data.text}</div>`;
+
   } catch (error) {
-    outputAnalisi.innerHTML = `<p style='color:red;'><b>Errore:</b> ${error.message}</p>`;
+    outputAnalisi.innerHTML = `<p style="color: red;"><b>Errore durante l'analisi:</b> ${error.message}</p>`;
   }
 }
 
-// Funzione per la chat di latino
+// Funzione per il Tutor IA (Chat)
 async function inviaDomandaChat() {
-  const chatInput = document.getElementById("chat-input");
-  const chatBox = document.getElementById("chat-box");
-  const testoDomanda = chatInput.value.trim();
+  const inputEl = document.getElementById('chat-input');
+  const chatBox = document.getElementById('chat-box');
+  const messaggio = inputEl.value.trim();
 
-  if (!testoDomanda) return;
+  if (!messaggio) return;
 
-  chatBox.innerHTML += `<div class="msg-user"><b>Tu:</b> ${testoDomanda}</div>`;
-  chatInput.value = "";
+  // Aggiunge la domanda dell'utente nella chat
+  chatBox.innerHTML += `<div class="chat-msg user"><b>Tu:</b> ${messaggio}</div>`;
+  inputEl.value = '';
+  chatBox.scrollTop = chatBox.scrollHeight;
+
+  // Elemento temporaneo di caricamento
+  const loadingId = 'loading-' + Date.now();
+  chatBox.innerHTML += `<div class="chat-msg ai" id="${loadingId}"><b>Tutor IA:</b> <i>Sta scrivendo...</i></div>`;
   chatBox.scrollTop = chatBox.scrollHeight;
 
   try {
-    const rispChat = await inviaRichiestaAI([
-      { role: "user", content: `Rispondi in modo conciso al dubbio di latino: "${testoDomanda}"` }
-    ]);
-    chatBox.innerHTML += `<div class="msg-ai"><b>Tutor:</b> ${rispChat}</div>`;
-    chatBox.scrollTop = chatBox.scrollHeight;
+    const response = await fetch('/api/get-data', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        messages: [
+          { role: "system", content: "Sei un Tutor IA esperto di latino, chiaro e di supporto per gli studenti." },
+          { role: "user", content: messaggio }
+        ]
+      })
+    });
+
+    const data = await response.json();
+    const loadingEl = document.getElementById(loadingId);
+
+    if (!response.ok) {
+      throw new Error(data.error || "Errore nella risposta del Tutor");
+    }
+
+    if (loadingEl) {
+      loadingEl.innerHTML = `<b>Tutor IA:</b> ${data.text}`;
+    }
+
   } catch (error) {
-    chatBox.innerHTML += `<div class="msg-ai" style="color:red;"><b>Tutor:</b> Errore di connessione.</div>`;
+    const loadingEl = document.getElementById(loadingId);
+    if (loadingEl) {
+      loadingEl.innerHTML = `<span style="color: red;"><b>Errore:</b> ${error.message}</span>`;
+    }
   }
+
+  chatBox.scrollTop = chatBox.scrollHeight;
 }
