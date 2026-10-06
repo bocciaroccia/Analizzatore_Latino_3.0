@@ -31,22 +31,22 @@ async function analizzaVersione() {
   try {
     let contentPayload = [];
 
-    const testoPrompt = `Effettua un'analisi approfondita e completa di questa versione di latino:
+    const testoPrompt = `Effettua un'analisi di altissimo livello accademico per questa versione di latino:
 - Titolo della versione: ${titolo || 'Non specificato'}
 - Libro di testo: ${libro || 'Non specificato'} (ISBN: ${isbn || 'N/D'})
 - Testo / Incipit fornito: ${incipit || 'Vedi immagine allegata'}
 
-Segui rigorosamente questo schema di risposta:
+Svolgi l'analisi seguendo esattamente questo schema:
 
-1. TRADUZIONE
-Fornisci la traduzione integrale e fluida in italiano.
+1. TRADUZIONE D'AUTORE
+Fornisci una traduzione in un italiano fluido, elegante e naturale, che rispetti lo stile dell'autore latino originale senza risultare rigida o macchinosamente letterale.
 
-2. ANALISI DETTAGLIATA (Frase per Frase)
+2. ANALISI FRASE PER FRASE
 Per ogni singola frase del testo latino:
-   a) TRADUZIONE DELLA FRASE
-   b) ANALISI GRAMMATICALE COMPLETA: Analizza ciascuna parola indicando parte del discorso, caso, genere, numero, e per i verbi modo, tempo, persona e paradigma completo.
-   c) ANALISI LOGICA: Indica chiaramente il ruolo sintattico di ogni elemento (soggetto, predicato, complementi).
-   d) ANALISI DEL PERIODO: Identifica la proposizione principale, le coordinate e le subordinate (specificando il tipo di subordinata e il grado).`;
+   a) TESTO LATINO E TRADUZIONE LETTERALE: Riporta la frase e la sua traduzione letterale di servizio.
+   b) ANALISI GRAMMATICALE ED ETIMOLOGICA: Analizza ciascuna parola (parte del discorso, caso, genere, numero; per i verbi: modo, tempo, persona, forma attiva/passiva e paradigma completo).
+   c) ANALISI LOGICA: Scomposizione in soggetto, predicato (verbale/nominale), attributi, apposizioni e complementi.
+   d) ANALISI DEL PERIODO: Individua la proposizione principale, le coordinate e le subordinate (con specificazione di tipo, grado e forma esplicita/implicita).`;
 
     if (foto) {
       const base64Image = await fileToBase64(foto);
@@ -65,7 +65,7 @@ Per ogni singola frase del testo latino:
       },
       body: JSON.stringify({
         messages: [
-          { role: "system", content: "Sei un professore universitario ed esperto analizzatore di sintassi latina, estremamente rigido e rigoroso nella distinzione tra analisi grammaticale, logica e del periodo." },
+          { role: "system", content: "Sei un latinista e traduttore professionista specializzato nell'adattamento elegante di testi classici latini in italiano d'autore." },
           { role: "user", content: contentPayload }
         ]
       })
