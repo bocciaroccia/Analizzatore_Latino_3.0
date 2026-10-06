@@ -20,31 +20,34 @@ async function analizzaVersione() {
   const risultatiSection = document.getElementById('risultati');
   const outputAnalisi = document.getElementById('output-analisi');
 
-  // Verifica che almeno un campo o una foto siano presenti
   if (!incipit && !titolo && !foto) {
     alert("Inserisci il titolo, le prime parole della versione o carica un'immagine!");
     return;
   }
 
-  // Mostra la sezione dei risultati senza riferimenti all'IA
   risultatiSection.classList.remove('hidden');
   outputAnalisi.innerHTML = "<p><i>Analisi in corso... attendere prego.</i></p>";
 
   try {
     let contentPayload = [];
 
-    // Prompt base con le informazioni testuali
-    const testoPrompt = `Effettua un'analisi completa di questa versione di latino:
+    const testoPrompt = `Effettua un'analisi approfondita e completa di questa versione di latino:
 - Titolo della versione: ${titolo || 'Non specificato'}
 - Libro di testo: ${libro || 'Non specificato'} (ISBN: ${isbn || 'N/D'})
 - Testo / Incipit fornito: ${incipit || 'Vedi immagine allegata'}
 
-Fornisci:
-1. Traduzione chiara e corretta in italiano.
-2. Analisi grammaticale e paradigmi dei verbi principali.
-3. Analisi logica e del periodo.`;
+Segui rigorosamente questo schema di risposta:
 
-    // Se è stata caricata una foto, la aggiungiamo alla richiesta
+1. TRADUZIONE
+Fornisci la traduzione integrale e fluida in italiano.
+
+2. ANALISI DETTAGLIATA (Frase per Frase)
+Per ogni singola frase del testo latino:
+   a) TRADUZIONE DELLA FRASE
+   b) ANALISI GRAMMATICALE COMPLETA: Analizza ciascuna parola indicando parte del discorso, caso, genere, numero, e per i verbi modo, tempo, persona e paradigma completo.
+   c) ANALISI LOGICA: Indica chiaramente il ruolo sintattico di ogni elemento (soggetto, predicato, complementi).
+   d) ANALISI DEL PERIODO: Identifica la proposizione principale, le coordinate e le subordinate (specificando il tipo di subordinata e il grado).`;
+
     if (foto) {
       const base64Image = await fileToBase64(foto);
       contentPayload = [
@@ -62,7 +65,7 @@ Fornisci:
       },
       body: JSON.stringify({
         messages: [
-          { role: "system", content: "Sei un docente ed esperto analizzatore di testi in latino." },
+          { role: "system", content: "Sei un professore universitario ed esperto analizzatore di sintassi latina, estremamente rigido e rigoroso nella distinzione tra analisi grammaticale, logica e del periodo." },
           { role: "user", content: contentPayload }
         ]
       })
@@ -74,8 +77,7 @@ Fornisci:
       throw new Error(data.error || "Errore nella risposta del server");
     }
 
-    // Mostra la risposta formattata a schermo
-    outputAnalisi.innerHTML = `<div style="white-space: pre-wrap; line-height: 1.5;">${data.text}</div>`;
+    outputAnalisi.innerHTML = `<div style="white-space: pre-wrap; line-height: 1.6;">${data.text}</div>`;
 
   } catch (error) {
     outputAnalisi.innerHTML = `<p style="color: red;"><b>Errore durante l'analisi:</b> ${error.message}</p>`;
