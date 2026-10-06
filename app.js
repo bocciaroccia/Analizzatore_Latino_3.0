@@ -26,27 +26,24 @@ async function analizzaVersione() {
   }
 
   risultatiSection.classList.remove('hidden');
-  outputAnalisi.innerHTML = "<p><i>Analisi in corso... attendere prego.</i></p>";
+  outputAnalisi.innerHTML = "<p><i>Analisi e traduzione in corso... attendere prego.</i></p>";
 
   try {
     let contentPayload = [];
 
-    const testoPrompt = `Effettua un'analisi di altissimo livello accademico per questa versione di latino:
-- Titolo della versione: ${titolo || 'Non specificato'}
-- Libro di testo: ${libro || 'Non specificato'} (ISBN: ${isbn || 'N/D'})
-- Testo / Incipit fornito: ${incipit || 'Vedi immagine allegata'}
+    const testoPrompt = `Analizza questa versione di latino con estremo rigore accademico e precisione filologica:
+- Titolo: ${titolo || 'Non specificato'}
+- Libro / ISBN: ${libro || 'N/D'} (${isbn || 'N/D'})
+- Testo / Incipit: ${incipit || 'Vedi foto allegata'}
 
-Svolgi l'analisi seguendo esattamente questo schema:
-
-1. TRADUZIONE D'AUTORE
-Fornisci una traduzione in un italiano fluido, elegante e naturale, che rispetti lo stile dell'autore latino originale senza risultare rigida o macchinosamente letterale.
-
-2. ANALISI FRASE PER FRASE
-Per ogni singola frase del testo latino:
-   a) TESTO LATINO E TRADUZIONE LETTERALE: Riporta la frase e la sua traduzione letterale di servizio.
-   b) ANALISI GRAMMATICALE ED ETIMOLOGICA: Analizza ciascuna parola (parte del discorso, caso, genere, numero; per i verbi: modo, tempo, persona, forma attiva/passiva e paradigma completo).
-   c) ANALISI LOGICA: Scomposizione in soggetto, predicato (verbale/nominale), attributi, apposizioni e complementi.
-   d) ANALISI DEL PERIODO: Individua la proposizione principale, le coordinate e le subordinate (con specificazione di tipo, grado e forma esplicita/implicita).`;
+ISTRUZIONI TASSATIVE:
+1. TRASCRIZIONE: Se è presente un'immagine, trascrivi prima con cura il testo latino completo presente nella foto.
+2. TRADUZIONE D'AUTORE INTEGRALE: Fornisci una traduzione completa in un italiano impeccabile, elegante e naturale, che renda perfettamente il senso del testo latino senza sembrare una traduzione automatica.
+3. ANALISI DETTAGLIATA PER OGNI SINGOLA FRASE: Non saltare, accorpare o omettere alcuna frase del testo latino. Per ciascuna frase fornisci:
+   a) FRASE LATINA E TRADUZIONE LETTERALE DI SERVIZIO
+   b) ANALISI GRAMMATICALE COMPLETA (parte del discorso, caso, genere, numero; per i verbi: modo, tempo, persona, diatesi e paradigma completo).
+   c) ANALISI LOGICA (soggetto, predicato verbale/nominale, attributi, apposizioni e tutti i complementi).
+   d) ANALISI DEL PERIODO (proposizione principale, coordinate e subordinate con specificazione di tipo, grado e forma esplicita/implicita).`;
 
     if (foto) {
       const base64Image = await fileToBase64(foto);
@@ -65,7 +62,10 @@ Per ogni singola frase del testo latino:
       },
       body: JSON.stringify({
         messages: [
-          { role: "system", content: "Sei un latinista e traduttore professionista specializzato nell'adattamento elegante di testi classici latini in italiano d'autore." },
+          { 
+            role: "system", 
+            content: "Sei un insigne professore di Filologia Classica e Traduzione Latina. Il tuo compito è trascrivere con accuratezza chirurgica il testo latino fornito, fornire una traduzione italiana impeccabile dal punto di vista stilistico e concettuale, ed effettuare l'analisi grammaticale, logica e del periodo per OGNI singola frase del testo senza mai ometterne alcuna." 
+          },
           { role: "user", content: contentPayload }
         ]
       })
