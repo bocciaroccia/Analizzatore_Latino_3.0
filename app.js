@@ -1,6 +1,17 @@
+// Funzione per convertire un file immagine in formato Base64
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = error => reject(error);
+  });
+}
+
 // Funzione per inviare la richiesta di analisi della versione
 async function analizzaVersione() {
-  const foto = document.getElementById('fotoVersione').files[0];
+  const fotoInput = document.getElementById('fotoVersione');
+  const foto = fotoInput ? fotoInput.files[0] : null;
   const libro = document.getElementById('titoloLibro').value;
   const isbn = document.getElementById('isbn').value;
   const titolo = document.getElementById('titolo').value;
@@ -9,28 +20,41 @@ async function analizzaVersione() {
   const risultatiSection = document.getElementById('risultati');
   const outputAnalisi = document.getElementById('output-analisi');
 
-  // Verifica che almeno un campo sia stato compilato
+  // Verifica che almeno un campo o una foto siano presenti
   if (!incipit && !titolo && !foto) {
     alert("Inserisci il titolo, le prime parole della versione o carica un'immagine!");
     return;
   }
 
-  // Mostra la sezione dei risultati con messaggio di attesa
+  // Mostra la sezione dei risultati senza riferimenti all'IA
   risultatiSection.classList.remove('hidden');
-  outputAnalisi.innerHTML = "<p><i>Analisi in corso tramite l'IA... attendere prego.</i></p>";
+  outputAnalisi.innerHTML = "<p><i>Analisi in corso... attendere prego.</i></p>";
 
-  // Prepara il prompt per l'LLM
-  const prompt = `Effettua un'analisi completa di questa versione di latino:
+  try {
+    let contentPayload = [];
+
+    // Prompt base con le informazioni testuali
+    const testoPrompt = `Effettua un'analisi completa di questa versione di latino:
 - Titolo della versione: ${titolo || 'Non specificato'}
 - Libro di testo: ${libro || 'Non specificato'} (ISBN: ${isbn || 'N/D'})
-- Testo / Incipit: ${incipit || 'Vedi titolo'}
+- Testo / Incipit fornito: ${incipit || 'Vedi immagine allegata'}
 
 Fornisci:
 1. Traduzione chiara e corretta in italiano.
 2. Analisi grammaticale e paradigmi dei verbi principali.
 3. Analisi logica e del periodo.`;
 
-  try {
+    // Se è stata caricata una foto, la aggiungiamo alla richiesta
+    if (foto) {
+      const base64Image = await fileToBase64(foto);
+      contentPayload = [
+        { type: "text", text: testoPrompt },
+        { type: "image_url", image_url: { url: base64Image } }
+      ];
+    } else {
+      contentPayload = testoPrompt;
+    }
+
     const response = await fetch('/api/get-data', {
       method: 'POST',
       headers: {
@@ -39,7 +63,7 @@ Fornisci:
       body: JSON.stringify({
         messages: [
           { role: "system", content: "Sei un docente ed esperto analizzatore di testi in latino." },
-          { role: "user", content: prompt }
+          { role: "user", content: contentPayload }
         ]
       })
     });
@@ -58,7 +82,7 @@ Fornisci:
   }
 }
 
-// Funzione per il Tutor IA (Chat)
+// Funzione per il Tutor (Chat)
 async function inviaDomandaChat() {
   const inputEl = document.getElementById('chat-input');
   const chatBox = document.getElementById('chat-box');
@@ -66,14 +90,12 @@ async function inviaDomandaChat() {
 
   if (!messaggio) return;
 
-  // Aggiunge la domanda dell'utente nella chat
   chatBox.innerHTML += `<div class="chat-msg user"><b>Tu:</b> ${messaggio}</div>`;
   inputEl.value = '';
   chatBox.scrollTop = chatBox.scrollHeight;
 
-  // Elemento temporaneo di caricamento
   const loadingId = 'loading-' + Date.now();
-  chatBox.innerHTML += `<div class="chat-msg ai" id="${loadingId}"><b>Tutor IA:</b> <i>Sta scrivendo...</i></div>`;
+  chatBox.innerHTML += `<div class="chat-msg ai" id="${loadingId}"><b>Tutor:</b> <i>Sta scrivendo...</i></div>`;
   chatBox.scrollTop = chatBox.scrollHeight;
 
   try {
@@ -84,7 +106,7 @@ async function inviaDomandaChat() {
       },
       body: JSON.stringify({
         messages: [
-          { role: "system", content: "Sei un Tutor IA esperto di latino, chiaro e di supporto per gli studenti." },
+          { role: "system", content: "Sei un Tutor esperto di latino, chiaro e di supporto per gli studenti." },
           { role: "user", content: messaggio }
         ]
       })
@@ -98,7 +120,7 @@ async function inviaDomandaChat() {
     }
 
     if (loadingEl) {
-      loadingEl.innerHTML = `<b>Tutor IA:</b> ${data.text}`;
+      loadingEl.innerHTML = `<b>Tutor:</b> ${data.text}`;
     }
 
   } catch (error) {
