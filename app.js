@@ -40,10 +40,10 @@ ISTRUZIONI TASSATIVE:
 1. TRASCRIZIONE: Se è presente un'immagine, trascrivi prima con cura il testo latino completo presente nella foto.
 2. TRADUZIONE D'AUTORE INTEGRALE: Fornisci una traduzione completa in un italiano impeccabile, elegante e naturale, che renda perfettamente il senso del testo latino senza sembrare una traduzione automatica.
 3. ANALISI DETTAGLIATA PER OGNI SINGOLA FRASE: Non saltare, accorpare o omettere alcuna frase del testo latino. Per ciascuna frase fornisci:
-   a) FRASE LATINA E TRADUZIONE LETTERALE DI SERVIZIO
-   b) ANALISI GRAMMATICALE COMPLETA (parte del discorso, caso, genere, numero; per i verbi: modo, tempo, persona, diatesi e paradigma completo).
-   c) ANALISI LOGICA (soggetto, predicato verbale/nominale, attributi, apposizioni e tutti i complementi).
-   d) ANALISI DEL PERIODO (proposizione principale, coordinate e subordinate con specificazione di tipo, grado e forma esplicita/implicita).`;
+   a) FRASE LATINA E TRADUZIONE LETTERALE DI SERVIZIO: Traduci ciascuna parola declinata nel suo esatto caso grammaticale (es. genitivo = di..., dativo = a...), mantenendo sempre uniti e intatti i costrutti sintattici (es. ablativi assoluti, proposizioni infinitive, perifrastiche, gerundi/gerundivi) senza spezzarli arbitrariamente.
+   b) ANALISI GRAMMATICALE COMPLETA: Analisi di ciascuna parola (parte del discorso, caso, genere, numero; per i verbi: modo, tempo, persona, diatesi e paradigma completo).
+   c) ANALISI LOGICA: Individua chiaramente il ruolo sintattico di ogni elemento (soggetto, predicato verbale/nominale, attributi, apposizioni e tutti i complementi).
+   d) ANALISI DEL PERIODO: Individua la proposizione principale, le coordinate e le subordinate (specificando tipo, grado, forma esplicita/implicita e i costrutti particolari presenti).`;
 
     if (foto) {
       const base64Image = await fileToBase64(foto);
@@ -64,7 +64,7 @@ ISTRUZIONI TASSATIVE:
         messages: [
           { 
             role: "system", 
-            content: "Sei un insigne professore di Filologia Classica e Traduzione Latina. Il tuo compito è trascrivere con accuratezza chirurgica il testo latino fornito, fornire una traduzione italiana impeccabile dal punto di vista stilistico e concettuale, ed effettuare l'analisi grammaticale, logica e del periodo per OGNI singola frase del testo senza mai ometterne alcuna." 
+            content: "Sei un insigne professore di Filologia Classica e Traduzione Latina. Il tuo compito è trascrivere con accuratezza chirurgica il testo latino fornito, rispettare i costrutti sintattici senza separarli, tradurre ogni parola declinata nel suo esatto caso e fornire l'analisi grammaticale, logica e del periodo per OGNI singola frase del testo senza mai ometterne alcuna." 
           },
           { role: "user", content: contentPayload }
         ]
